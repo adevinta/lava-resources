@@ -49,6 +49,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"golang.org/x/mod/semver"
 )
@@ -135,6 +136,18 @@ func ghRelease(tag, target string, update bool, files []string) error {
 		if _, err := cmdOutput("gh", "release", "delete", "--cleanup-tag", "--yes", tag); err != nil {
 			log.Printf("warn: could not delete release %q", tag)
 		}
+
+		// BUG(rm): If a release is deleted and then created
+		// again to update its reference, the new release is
+		// created as draft. This happens because of a race
+		// condition on the GitHub side.
+		//
+		// A 30s delay should mitigate the issue while it is
+		// not fixed by GitHub.
+		//
+		// For more information, see
+		// https://github.com/cli/cli/issues/8458
+		time.Sleep(30 * time.Second)
 	}
 
 	args := []string{"release", "create", "--target", target, tag}
