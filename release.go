@@ -76,11 +76,14 @@ func main() {
 		log.Fatalf("error: get hash: %v", err)
 	}
 
+	var releases []string
+
 	// Do not create vMAJOR and vMAJOR.MINOR for pre-releases.
-	releases := []string{version}
 	if semver.Prerelease(version) == "" {
-		releases = append(releases, semver.Major(version), semver.MajorMinor(version))
+		releases = []string{semver.Major(version), semver.MajorMinor(version)}
 	}
+
+	releases = append(releases, version)
 
 	for _, r := range releases {
 		tag := dir + "/" + r
